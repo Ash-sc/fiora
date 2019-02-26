@@ -152,7 +152,7 @@ class Chat extends Component {
                         &nbsp;&nbsp;
                         {member.get('os') === 'Windows Server 2008 R2 / 7' ? 'Windows 7' : member.get('os')}
                     </p>
-                </Tooltip>)
+                </Tooltip>
             </div>
         ));
     }

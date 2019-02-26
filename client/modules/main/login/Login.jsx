@@ -28,7 +28,6 @@ class Login extends Component {
         });
     }
     handleRegister = () => {
-        console.log(1111, md5(this.registerPassword.getValue()));
         socket.emit('register', {
             username: this.registerUsername.getValue(),
             password: md5(this.registerPassword.getValue()),
@@ -61,7 +60,7 @@ class Login extends Component {
         return (
             <div className="pane">
                 <h3>用户名</h3>
-                <Input ref={i => this.registerUsername = i} onEnter={this.handleRegister} placeholder="用户名即昵称, 请慎重, 不可修改" />
+                <Input ref={i => this.registerUsername = i} onEnter={this.handleRegister} placeholder="用户名不可修改, 可为数字、中英文, 最长16字节" />
                 <h3>密码</h3>
                 <Input type="password" ref={i => this.registerPassword = i} onEnter={this.handleRegister} placeholder="暂时也不支持修改" />
                 <button onClick={this.handleRegister}>注册</button>

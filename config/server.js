@@ -13,7 +13,7 @@ module.exports = {
     jwtSecret: options.jwtSecret || env.JwtSecret || 'jwtSecret',
 
     // Maximize the number of groups
-    maxGroupsCount: 3,
+    maxGroupsCount: 30,
 
     // qiniu config
     qiniuAccessKey: options.qiniuAccessKey || env.QiniuAccessKey || '',
