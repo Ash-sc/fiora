@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import platform from 'platform';
+import md5 from 'md5';
 
 import socket from '@/socket';
 import action from '@/state/action';
@@ -12,7 +13,7 @@ class Login extends Component {
     handleLogin = () => {
         socket.emit('login', {
             username: this.loginUsername.getValue(),
-            password: this.loginPassword.getValue(),
+            password: md5(this.loginPassword.getValue()),
             os: platform.os.family,
             browser: platform.name,
             environment: platform.description,
@@ -27,9 +28,10 @@ class Login extends Component {
         });
     }
     handleRegister = () => {
+        console.log(1111, md5(this.registerPassword.getValue()));
         socket.emit('register', {
             username: this.registerUsername.getValue(),
-            password: this.registerPassword.getValue(),
+            password: md5(this.registerPassword.getValue()),
             os: platform.os.family,
             browser: platform.name,
             environment: platform.description,

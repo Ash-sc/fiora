@@ -41,9 +41,9 @@ function handleNewUser(user) {
     if (Date.now() - user.createTime.getTime() < OneDay) {
         const newUserList = global.mdb.get('newUserList');
         newUserList.add(user._id.toString());
-        setTimeout(() => {
-            newUserList.delete(user._id.toString());
-        }, OneDay);
+        // setTimeout(() => {
+        //     newUserList.delete(user._id.toString());
+        // }, OneDay);
     }
 }
 
@@ -253,7 +253,8 @@ module.exports = {
         assert(user, '添加好友失败, 用户不存在');
 
         const friend = await Friend.find({ from: ctx.socket.user, to: user._id });
-        assert(friend.length === 0, '你们已经是好友了');
+        const friendMirror = await Friend.find({ to: ctx.socket.user, from: user._id });
+        assert(friend.length === 0 && friendMirror.length === 0, '你们已经是好友了');
 
         const newFriend = await Friend.create({
             from: ctx.socket.user,
@@ -268,6 +269,33 @@ module.exports = {
             to: newFriend.to,
         };
     },
+    async getFriendList(ctx) {
+        const { userId } = ctx.data;
+        assert(isValid(userId), '无效的用户ID');
+
+        const friend = await Friend.find({ from: ctx.socket.user });
+        const friendMirror = await Friend.find({ to: ctx.socket.user });
+
+        const friendList = [];
+        for (let i = 0; i < friend.length; i++) {
+            const userInfo = await User.findOne({ _id: friend[i].to });
+            friendList.push({
+                username: userInfo.username,
+                _id: userInfo._id,
+                avatar: userInfo.avatar,
+            });
+        }
+        for (let j = 0; j < friendMirror.length; j++) {
+            const userInfo = await User.findOne({ _id: friendMirror[j].from });
+            friendList.push({
+                username: userInfo.username,
+                _id: userInfo._id,
+                avatar: userInfo.avatar,
+            });
+        }
+
+        return friendList;
+    },
     async deleteFriend(ctx) {
         const { userId } = ctx.data;
         assert(isValid(userId), '无效的用户ID');
@@ -276,6 +304,7 @@ module.exports = {
         assert(user, '用户不存在');
 
         await Friend.remove({ from: ctx.socket.user, to: user._id });
+        await Friend.remove({ to: ctx.socket.user, from: user._id });
         return {};
     },
     /**

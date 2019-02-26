@@ -1,10 +1,10 @@
 {
-    "name": "fiora",
-    "short_name": "fiora",
+    "name": "glab-chat",
+    "short_name": "glab-chat",
     "start_url": "/",
     "display": "standalone",
     "background_color": "#FAFAFA",
-    "description": "一个神奇的聊天室",
+    "description": "web聊天室",
     "orientation": "portrait-primary",
     "theme_color": "#4a90e2",
     "icons": [{

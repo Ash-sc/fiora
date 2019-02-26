@@ -5,6 +5,8 @@ import { TwitterPicker } from 'react-color';
 import { RadioGroup, RadioButton } from 'react-radio-buttons';
 import Switch from 'react-switch';
 import ReactLoading from 'react-loading';
+import fetch from 'utils/fetch';
+import getFriendId from 'utils/getFriendId';
 
 import action from '@/state/action';
 import socket from '@/socket';
@@ -34,8 +36,9 @@ import './Sidebar.less';
 @booleanStateDecorator({
     settingDialog: false, // 设置
     userDialog: false, // 个人信息设置
-    rewardDialog: false, // 打赏
+    // rewardDialog: false, // 打赏
     infoDialog: false, // 关于
+    friendsDialog: false, // 好友
     appDownloadDialog: false, // APP下载
     adminDialog: false, // 管理员
 })
@@ -84,7 +87,17 @@ class Sidebar extends Component {
         super(...args);
         this.state = {
             backgroundLoading: false,
+            friendList: [],
         };
+    }
+    getFriendsList = async () => {
+        const { userId } = this.props;
+        const [err, friendList] = await fetch('getFriendList', { userId });
+        if (!err) {
+            this.setState({
+                friendList,
+            });
+        }
     }
     handlePrimaryColorChange = (color) => {
         const primaryColor = `${color.rgb.r}, ${color.rgb.g}, ${color.rgb.b}`;
@@ -133,9 +146,42 @@ class Sidebar extends Component {
             </Tooltip>
         );
     }
+    handleFocusUser = async (friendInfo) => {
+        const { userId } = this.props;
+
+        const _id = getFriendId(friendInfo._id, userId);
+        const existCount = 0;
+        const newLinkman = {
+            _id,
+            type: 'friend',
+            createTime: Date.now(),
+            avatar: friendInfo.avatar,
+            name: friendInfo.username,
+            messages: [],
+            unread: 0,
+            from: userId,
+            to: friendInfo._id,
+        };
+        action.addLinkman(newLinkman, true);
+        const [err2, messages] = await fetch('getLinkmanHistoryMessages', { linkmanId: _id, existCount });
+        if (!err2) {
+            action.addLinkmanMessages(_id, messages);
+        }
+
+        this.toggleFriendsDialog();
+    }
+    handleDeleteFriend = async (friendId) => {
+        const { userId } = this.props;
+        const [err] = await fetch('deleteFriend', { userId: friendId });
+        if (!err) {
+            action.removeLinkman(getFriendId(userId, friendId));
+            Message.success('删除好友成功');
+            this.getFriendsList();
+        }
+    }
     render() {
         const { isLogin, isConnect, avatar, primaryColor, primaryTextColor, backgroundImage, sound, soundSwitch, notificationSwitch, voiceSwitch, isAdmin } = this.props;
-        const { settingDialog, userDialog, rewardDialog, infoDialog, appDownloadDialog, backgroundLoading, adminDialog } = this.state;
+        const { settingDialog, userDialog, friendsDialog, appDownloadDialog, backgroundLoading, adminDialog, friendList } = this.state;
         if (isLogin) {
             return (
                 <div className="module-main-sidebar">
@@ -148,14 +194,23 @@ class Sidebar extends Component {
                                 :
                                 null
                         }
-                        <Tooltip placement="right" mouseEnterDelay={0.3} overlay={<span>源码</span>}>
+                        {/* <Tooltip placement="right" mouseEnterDelay={0.3} overlay={<span>源码</span>}>
                             <a href="https://github.com/yinxin630/fiora" target="_black" rel="noopener noreferrer">
                                 <IconButton width={40} height={40} icon="github" iconSize={26} />
                             </a>
-                        </Tooltip>
-                        {Sidebar.renderTooltip('下载APP', <IconButton width={40} height={40} icon="app" iconSize={28} onClick={this.toggleAppDownloadDialog} />)}
-                        {Sidebar.renderTooltip('打赏', <IconButton width={40} height={40} icon="dashang" iconSize={26} onClick={this.toggleRewardDialog} />)}
-                        {Sidebar.renderTooltip('关于', <IconButton width={40} height={40} icon="about" iconSize={26} onClick={this.toggleInfoDialog} />)}
+                        </Tooltip> */}
+                        {/* {Sidebar.renderTooltip('下载APP', <IconButton width={40} height={40} icon="app" iconSize={28} onClick={this.toggleAppDownloadDialog} />)} */}
+                        {/* {Sidebar.renderTooltip('打赏', <IconButton width={40} height={40} icon="dashang" iconSize={26} onClick={this.toggleRewardDialog} />)} */}
+                        {Sidebar.renderTooltip('好友', <IconButton
+                            width={40}
+                            height={40}
+                            icon="friends"
+                            iconSize={26}
+                            onClick={() => {
+                                this.toggleFriendsDialog();
+                                this.getFriendsList();
+                            }}
+                        />)}
                         {Sidebar.renderTooltip('设置', <IconButton width={40} height={40} icon="setting" iconSize={26} onClick={this.toggleSettingDialog} />)}
                         {Sidebar.renderTooltip('退出登录', <IconButton width={40} height={40} icon="logout" iconSize={26} onClick={Sidebar.logout} />)}
                     </div>
@@ -227,7 +282,7 @@ class Sidebar extends Component {
                         </div>
                     </Dialog>
                     <SelfInfo visible={userDialog} onClose={this.toggleUserDialog} />
-                    <Dialog className="dialog reward " visible={rewardDialog} title="打赏" onClose={this.toggleRewardDialog}>
+                    {/* <Dialog className="dialog reward " visible={rewardDialog} title="打赏" onClose={this.toggleRewardDialog}>
                         <div className="content">
                             <p>如果你觉得这个聊天室代码对你有帮助, 希望打赏下给个鼓励~~<br />作者大多数时间在线, 欢迎提问, 有问必答</p>
                             <div>
@@ -235,8 +290,29 @@ class Sidebar extends Component {
                                 <img src={require('@/assets/images/wxpay.jpg')} />
                             </div>
                         </div>
+                    </Dialog> */}
+                    <Dialog className="dialog fiora-friends" visible={friendsDialog} title="好友" onClose={this.toggleFriendsDialog}>
+                        <div className="friend-list">
+                            {friendList.length ?
+                                friendList.map(friendInfo => (
+                                    <div key={friendInfo._id} className="friend-item">
+                                        <div className="user-info">
+                                            <img
+                                                className="component-avatar"
+                                                src={/(blob|data):/.test(friendInfo.avatar) ? friendInfo.avatar : `${friendInfo.avatar}?imageView2/3/w/120/h/120`}
+                                                alt=""
+                                            />
+                                            <p className="friend-name">{friendInfo.username}</p>
+                                        </div>
+                                        <Button type="danger" onClick={() => this.handleDeleteFriend(friendInfo._id)}>删除好友</Button>
+                                        <Button onClick={() => this.handleFocusUser(friendInfo)}>发送消息</Button>
+                                    </div>
+                                )) :
+                                <p style={{ textAlign: 'center', marginTop: '20px' }}>暂无好友</p>
+                            }
+                        </div>
                     </Dialog>
-                    <Dialog className="dialog fiora-info " visible={infoDialog} title="关于" onClose={this.toggleInfoDialog}>
+                    {/* <Dialog className="dialog fiora-info " visible={infoDialog} title="关于" onClose={this.toggleInfoDialog}>
                         <div className="content">
                             <div>
                                 <p>作者主页</p>
@@ -268,7 +344,7 @@ class Sidebar extends Component {
                                 </ul>
                             </div>
                         </div>
-                    </Dialog>
+                    </Dialog> */}
                     <AppDownload visible={appDownloadDialog} onClose={this.toggleAppDownloadDialog} />
                     <AdminDialog visible={adminDialog} onClose={this.toggleAdminDialog} />
                 </div>

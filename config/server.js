@@ -30,5 +30,5 @@ module.exports = {
     administrator: options.administrator || env.Administrator || '',
 
     // default group name
-    defaultGroupName: 'fiora',
+    defaultGroupName: '公共聊天室',
 };

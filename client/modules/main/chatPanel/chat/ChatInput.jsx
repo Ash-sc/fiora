@@ -88,6 +88,12 @@ class ChatInput extends Component {
         };
         this.ime = false;
     }
+
+    componentDidMount() {
+        // console.log(this.isLogin, 2)
+        // !this.isLogin && ChatInput.handleLogin()
+    }
+
     componentDidUpdate(prevProps) {
         if (this.props.focus !== prevProps.focus && this.message) {
             this.message.focus();
@@ -179,7 +185,7 @@ class ChatInput extends Component {
                     atContent: '',
                 });
                 const { focus } = this.props;
-                const [err, result] = await fetch('getGroupOnlineMembers', { groupId: focus });
+                const [err, result] = await fetch('getGroupMembers', { groupId: focus });
                 if (!err) {
                     action.setGroupMembers(focus, result);
                 }
@@ -525,7 +531,7 @@ class ChatInput extends Component {
         }
         return (
             <div className="chat-chatInput guest">
-                <p>游客朋友你好, 请<b onClick={ChatInput.handleLogin}>登录</b>后参与聊天</p>
+                <p>你好, 请<b onClick={ChatInput.handleLogin}>登录</b>后参与聊天</p>
             </div>
         );
     }

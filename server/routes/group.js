@@ -2,12 +2,13 @@ const assert = require('assert');
 const { isValid } = require('mongoose').Types.ObjectId;
 
 const Group = require('../models/group');
+const User = require('../models/user');
 const Socket = require('../models/socket');
 const Message = require('../models/message');
 const config = require('../../config/server');
 const getRandomAvatar = require('../../utils/getRandomAvatar');
 
-async function getGroupOnlineMembers(group) {
+async function getGroupMembers(group) {
     const sockets = await Socket
         .find(
             { user: group.members },
@@ -17,11 +18,29 @@ async function getGroupOnlineMembers(group) {
             'user',
             { username: 1, avatar: 1 },
         );
-    const filterSockets = sockets.reduce((result, socket) => {
-        result[socket.user] = socket;
+    const usersInfo = await User
+        .find(
+            { _id: group.members },
+            { username: 1, avatar: 1 },
+        );
+    const offLineMembers = usersInfo.reduce((result, user, i) => {
+        if (sockets.every(socket => !socket.user._id.equals(user._id))) {
+            result.push({
+                os: '',
+                browser: '',
+                environment: '',
+                _id: i,
+                user,
+            });
+        }
         return result;
-    }, {});
-    return Object.values(filterSockets);
+    }, []);
+    // const filterSockets = sockets.reduce((result, socket) => {
+    //     result[socket.user] = socket;
+    //     return result;
+    // }, {});
+    // return Object.values(filterSockets);
+    return sockets.concat(offLineMembers);
 }
 
 module.exports = {
@@ -112,18 +131,18 @@ module.exports = {
 
         return {};
     },
-    async getGroupOnlineMembers(ctx) {
+    async getGroupMembers(ctx) {
         const { groupId } = ctx.data;
         assert(isValid(groupId), '无效的群组ID');
 
         const group = await Group.findOne({ _id: groupId });
         assert(group, '群组不存在');
-        return getGroupOnlineMembers(group);
+        return getGroupMembers(group);
     },
     async getDefaultGroupOnlineMembers() {
         const group = await Group.findOne({ isDefault: true });
         assert(group, '群组不存在');
-        return getGroupOnlineMembers(group);
+        return getGroupMembers(group);
     },
     async changeGroupAvatar(ctx) {
         const { groupId, avatar } = ctx.data;

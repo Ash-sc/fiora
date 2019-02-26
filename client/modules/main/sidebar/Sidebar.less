@@ -281,6 +281,44 @@
         user-select: text;
     }
 }
+
+.fiora-friends {
+    width: 600px !important;
+    height: initial !important;
+    .rc-dialog-body {
+        border-radius: 6px;
+        margin-bottom: 20px;
+    }
+    .friend-list {
+        max-height: 400px;
+        .friend-item {
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            &:hover {
+                background-color: #d8d8d8;
+            }
+        }
+        .user-info {
+            display: flex;
+            flex: 1;
+            .component-avatar {
+                height: 60px;
+                width: 60px;
+                border-radius: 30px;
+            }
+            .friend-name {
+                margin-left: 30px;
+                line-height: 60px;
+            }
+        }
+        .component-button {
+            height: 34px;
+            width: 100px;
+            margin-left: 20px;
+        }
+    }
+}
 .app-download {
     .android {
         p, a {

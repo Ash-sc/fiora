@@ -27,6 +27,7 @@ module.exports = {
             '@': resolve('client'),
             root: resolve(''),
             utils: resolve('utils'),
+            'react-dom': '@hot-loader/react-dom',
         },
     },
     module: {

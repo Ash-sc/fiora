@@ -59,7 +59,7 @@ class Chat extends Component {
         } while (target && target !== currentTarget);
         this.closeGroupInfo();
     }
-    groupInfoDialog = async (e) => {
+    toggleGroupInfoDialog = async (e) => {
         const { focus, userId } = this.props;
         this.setState({
             groupInfoDialog: true,
@@ -70,7 +70,7 @@ class Chat extends Component {
         let err = null;
         let result = null;
         if (userId) {
-            [err, result] = await fetch('getGroupOnlineMembers', { groupId: focus });
+            [err, result] = await fetch('getGroupMembers', { groupId: focus });
         } else {
             [err, result] = await fetch('getDefaultGroupOnlineMembers', { });
         }
@@ -141,7 +141,7 @@ class Chat extends Component {
      */
     renderMembers() {
         return this.props.members.map(member => (
-            <div key={member.get('_id')}>
+            <div key={member.get('_id')} style={{ opacity: member.get('browser') ? '1' : '0.5' }}>
                 <div onClick={this.handleClickGroupInfoUser.bind(this, member)}>
                     <Avatar size={24} src={member.getIn(['user', 'avatar'])} />
                     <p>{member.getIn(['user', 'username'])}</p>
@@ -152,7 +152,7 @@ class Chat extends Component {
                         &nbsp;&nbsp;
                         {member.get('os') === 'Windows Server 2008 R2 / 7' ? 'Windows 7' : member.get('os')}
                     </p>
-                </Tooltip>
+                </Tooltip>)
             </div>
         ));
     }
@@ -161,7 +161,7 @@ class Chat extends Component {
         const { userId, creator, avatar, type, to, name, members } = this.props;
         return (
             <div className="module-main-chat">
-                <HeaderBar onShowInfo={type === 'group' ? this.groupInfoDialog : this.showUserInfoDialog.bind(this, { _id: to, username: name, avatar })} />
+                <HeaderBar onShowInfo={type === 'group' ? this.toggleGroupInfoDialog : this.showUserInfoDialog.bind(this, { _id: to, username: name, avatar })} />
                 <MessageList showUserInfoDialog={this.showUserInfoDialog} />
                 <ChatInput members={members} />
                 <div className={`float-panel group-info ${groupInfoDialog ? 'show' : 'hide'}`}>

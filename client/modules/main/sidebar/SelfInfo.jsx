@@ -11,6 +11,7 @@ import Button from '@/components/Button';
 import Message from '@/components/Message';
 import action from '@/state/action';
 import socket from '@/socket';
+import md5 from 'md5';
 
 import fetch from 'utils/fetch';
 import readDiskFile from 'utils/readDiskFile';
@@ -95,8 +96,8 @@ class SelfInfo extends Component {
      */
     changePassword = async () => {
         const [err] = await fetch('changePassword', {
-            oldPassword: this.oldPassword.getValue(),
-            newPassword: this.newPassword.getValue(),
+            oldPassword: md5(this.oldPassword.getValue()),
+            newPassword: md5(this.newPassword.getValue()),
         });
         if (!err) {
             action.logout();

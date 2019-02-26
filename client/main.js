@@ -1,13 +1,13 @@
 /* eslint-disable import/first */
-if (
-    (window.location.protocol === 'https:' || window.location.hostname === 'localhost')
-    && navigator.serviceWorker
-) {
-    window.addEventListener('load', () => {
-        const sw = process.env.NODE_ENV === 'development' ? '/static/fiora-sw.js' : '/fiora-sw.js';
-        navigator.serviceWorker.register(sw);
-    });
-}
+// if (
+//     (window.location.protocol === 'https:' || window.location.hostname === 'localhost')
+//     && navigator.serviceWorker
+// ) {
+//     window.addEventListener('load', () => {
+//         const sw = process.env.NODE_ENV === 'development' ? '/fiora-sw.js' : '/fiora-sw.js';
+//         navigator.serviceWorker.register(sw);
+//     });
+// }
 
 import 'babel-polyfill';
 

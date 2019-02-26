@@ -25,7 +25,7 @@ if (notificationSwitch === 'true') {
 } else {
     notificationSwitch = false;
 }
-let voiceSwitch = window.localStorage.getItem('voiceSwitch') || 'true';
+let voiceSwitch = window.localStorage.getItem('voiceSwitch') || 'false'; // 默认语音播报
 if (voiceSwitch === 'true') {
     voiceSwitch = true;
 } else {
@@ -152,9 +152,12 @@ function reducer(state = initialState, action) {
     }
 
     case 'AddLinkman': {
-        const newState = state.updateIn(['user', 'linkmans'], linkmans => (
-            linkmans.unshift(immutable.fromJS(action.linkman))
-        ));
+        const newState = state.updateIn(['user', 'linkmans'], (linkmans) => {
+            const linkmanIndex = state
+                .getIn(['user', 'linkmans'])
+                .findIndex(l => l.get('_id') === action.linkman._id);
+            return linkmanIndex === -1 ? linkmans.unshift(immutable.fromJS(action.linkman)) : linkmans;
+        });
         if (action.focus) {
             return newState.set('focus', action.linkman._id);
         }
@@ -165,7 +168,7 @@ function reducer(state = initialState, action) {
             .getIn(['user', 'linkmans'])
             .findIndex(l => l.get('_id') === action.linkmanId);
         const newState = state.updateIn(['user', 'linkmans'], linkmans => (
-            linkmans.delete(linkmanIndex)
+            linkmanIndex > -1 ? linkmans.delete(linkmanIndex) : linkmans
         ));
         return newState.set('focus', newState.getIn(['user', 'linkmans', 0, '_id']));
     }
@@ -201,12 +204,12 @@ function reducer(state = initialState, action) {
         const linkmanIndex = state
             .getIn(['user', 'linkmans'])
             .findIndex(l => l.get('_id') === action.linkmanId);
-        return state
+        return linkmanIndex === -1 ? state
             .updateIn(['user', 'linkmans', linkmanIndex], l => (
                 l.update('messages', messages => (
                     immutable.fromJS(action.messages).concat(messages)
                 ))
-            ));
+            )) : state;
     }
 
     case 'UpdateSelfMessage': {
