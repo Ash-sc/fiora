@@ -5,7 +5,7 @@ const merge = require('webpack-merge');
 const baseWebpackConfig = require('./webpack.base.conf');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const FriendlyErrorsPlugin = require('friendly-errors-webpack-plugin');
-const pages = require('../config//pages');
+const pages = require('../config/pages');
 
 const htmlPlugins = pages.map(page => new HtmlWebpackPlugin(page));
 

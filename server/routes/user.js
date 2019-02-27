@@ -136,9 +136,24 @@ module.exports = {
             ctx.socket.socket.join(group._id);
         });
 
-        const friends = await Friend
+        let friends = await Friend
             .find({ from: user._id })
             .populate('to', { avatar: 1, username: 1 });
+        
+        const friendsMirror = await Friend
+            .find({ to: user._id })
+            .populate('from', { avatar: 1, username: 1 });
+
+        friends = friends.concat(
+            friendsMirror.reduce((result, item) => {
+                result.push({
+                    _id: item._id,
+                    from: item.to,
+                    to: item.from,
+                });
+                return result;
+            }, [])
+        );
 
         const token = generateToken(user._id, environment);
 
@@ -191,9 +206,24 @@ module.exports = {
             ctx.socket.socket.join(group._id);
         });
 
-        const friends = await Friend
+        let friends = await Friend
             .find({ from: user._id })
             .populate('to', { avatar: 1, username: 1 });
+
+        const friendsMirror = await Friend
+            .find({ to: user._id })
+            .populate('from', { avatar: 1, username: 1 });
+
+        friends = friends.concat(
+            friendsMirror.reduce((result, item) => {
+                result.push({
+                    _id: item._id,
+                    from: item.to,
+                    to: item.from,
+                });
+                return result;
+            }, [])
+        );
 
         ctx.socket.user = user._id;
         await Socket.update({ id: ctx.socket.id }, {
