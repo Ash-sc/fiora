@@ -104,6 +104,9 @@ function addLinkmanMessage(linkmanId, message) {
         linkmanId,
         message,
     });
+    dispatch({
+        type: 'UpdateUnreadMessage',
+    });
 }
 function addLinkmanMessages(linkmanId, messages) {
     messages.forEach(m => convertRobot10Message(m));
@@ -140,6 +143,9 @@ function setFocus(linkmanId) {
         type: 'SetFocus',
         linkmanId,
     });
+    dispatch({
+        type: 'UpdateUnreadMessage',
+    });
 }
 function setGroupMembers(groupId, members) {
     dispatch({
@@ -165,6 +171,9 @@ function addLinkman(linkman, focus = false) {
         type: 'AddLinkman',
         linkman,
         focus,
+    });
+    dispatch({
+        type: 'UpdateUnreadMessage',
     });
 }
 function removeLinkman(linkmanId) {

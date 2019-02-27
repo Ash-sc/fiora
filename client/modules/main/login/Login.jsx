@@ -11,9 +11,12 @@ import './Login.less';
 
 class Login extends Component {
     handleLogin = () => {
+        const username = this.loginUsername.getValue().trim();
+        const password = this.loginPassword.getValue().trim();
+        if (!username || !password) return Message.error('用户名/密码不能为空');
         socket.emit('login', {
-            username: this.loginUsername.getValue(),
-            password: md5(this.loginPassword.getValue()),
+            username,
+            password: md5(password),
             os: platform.os.family,
             browser: platform.name,
             environment: platform.description,
@@ -28,9 +31,12 @@ class Login extends Component {
         });
     }
     handleRegister = () => {
+        const username = this.registerUsername.getValue().trim();
+        const password = this.registerPassword.getValue().trim();
+        if (!username || !password) return Message.error('用户名/密码不能为空');
         socket.emit('register', {
-            username: this.registerUsername.getValue(),
-            password: md5(this.registerPassword.getValue()),
+            username,
+            password: md5(password),
             os: platform.os.family,
             browser: platform.name,
             environment: platform.description,
@@ -49,7 +55,7 @@ class Login extends Component {
         return (
             <div className="pane">
                 <h3>用户名</h3>
-                <Input ref={i => this.loginUsername = i} onEnter={this.handleLogin} />
+                <Input ref={i => this.loginUsername = i} />
                 <h3>密码</h3>
                 <Input type="password" ref={i => this.loginPassword = i} onEnter={this.handleLogin} />
                 <button onClick={this.handleLogin}>登录</button>
@@ -60,7 +66,7 @@ class Login extends Component {
         return (
             <div className="pane">
                 <h3>用户名</h3>
-                <Input ref={i => this.registerUsername = i} onEnter={this.handleRegister} placeholder="用户名不可修改, 可为数字、中英文, 最长16字节" />
+                <Input ref={i => this.registerUsername = i} placeholder="用户名不可修改, 可为数字、中英文, 最长20字节" />
                 <h3>密码</h3>
                 <Input type="password" ref={i => this.registerPassword = i} onEnter={this.handleRegister} placeholder="暂时也不支持修改" />
                 <button onClick={this.handleRegister}>注册</button>

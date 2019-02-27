@@ -23,16 +23,10 @@ async function getGroupMembers(group) {
             { _id: group.members },
             { username: 1, avatar: 1 },
         );
-    const offLineMembers = usersInfo.reduce((result, user, i) => {
-        if (sockets.every(socket => !socket.user._id.equals(user._id))) {
-            result.push({
-                os: '',
-                browser: '',
-                environment: '',
-                _id: i,
-                user,
-            });
-        }
+
+    const members = usersInfo.reduce((result, user) => {
+        const socketInfo = sockets.find(socket => socket.user._id.equals(user._id));
+        if (socketInfo) result.unshift(socketInfo);
         return result;
     }, []);
     // const filterSockets = sockets.reduce((result, socket) => {
@@ -40,7 +34,7 @@ async function getGroupMembers(group) {
     //     return result;
     // }, {});
     // return Object.values(filterSockets);
-    return sockets.concat(offLineMembers);
+    return members;
 }
 
 module.exports = {

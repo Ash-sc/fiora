@@ -46,6 +46,7 @@ const initialState = immutable.fromJS({
         notificationSwitch,
         voiceSwitch,
     },
+    totalUnread: 0,
 });
 
 
@@ -211,7 +212,11 @@ function reducer(state = initialState, action) {
                 ))
             )) : state;
     }
-
+    case 'UpdateUnreadMessage': {
+        const totalUnread = state.getIn(['user', 'linkmans']).reduce((res, item) => res + (item.get('unread') || 0), 0);
+        window.document.title = `${totalUnread > 0 ? (`(${totalUnread}) `) : ''}${window.document.title.replace(/\(\d+\)/gi, '')}`;
+        return state.set('totalUnread', totalUnread);
+    }
     case 'UpdateSelfMessage': {
         const linkmanIndex = state
             .getIn(['user', 'linkmans'])
