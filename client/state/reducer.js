@@ -205,7 +205,7 @@ function reducer(state = initialState, action) {
         const linkmanIndex = state
             .getIn(['user', 'linkmans'])
             .findIndex(l => l.get('_id') === action.linkmanId);
-        return linkmanIndex === -1 ? state
+        return linkmanIndex !== -1 ? state
             .updateIn(['user', 'linkmans', linkmanIndex], l => (
                 l.update('messages', messages => (
                     immutable.fromJS(action.messages).concat(messages)
