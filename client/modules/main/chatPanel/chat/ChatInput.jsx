@@ -326,7 +326,7 @@ class ChatInput extends Component {
             return Message.warning('要发送的文件过大', 3);
         }
 
-        const ext = file.type.split('/').pop().toLowerCase();
+        const ext = file.filename.split('/').pop().toLowerCase();
         // const url = URL.createObjectURL(file.result);
 
         const id = this.addSelfMessage('image', `url:&&filename:${file.filename}`);
