@@ -114,7 +114,11 @@ class ChatInput extends Component {
     handleFeatureMenuClick = ({ key }) => {
         switch (key) {
         case 'image': {
-            this.handleSelectFile();
+            this.handleSelectFile('image');
+            break;
+        }
+        case 'file': {
+            this.handleSelectFile('file');
             break;
         }
         case 'huaji': {
@@ -264,7 +268,7 @@ class ChatInput extends Component {
             loading: true,
         };
 
-        if (type === 'image') {
+        if (type === 'image' || type === 'file') {
             message.percent = 0;
         }
         action.addLinkmanMessage(focus, message);
@@ -317,15 +321,42 @@ class ChatInput extends Component {
         };
         img.src = url;
     }
-    handleSelectFile = async () => {
+    sendFileMessage = async (file) => {
+        if (file.length > config.maxFileSize) {
+            return Message.warning('要发送的文件过大', 3);
+        }
+
+        const ext = file.type.split('/').pop().toLowerCase();
+        // const url = URL.createObjectURL(file.result);
+
+        const id = this.addSelfMessage('image', `url:&&filename:${file.filename}`);
+
+        try {
+            const { userId, focus } = this.props;
+            const fileUrl = await uploadFile(
+                file.result,
+                `FileMessage/${userId}_${Date.now()}.${ext}`,
+                `FileMessage_${userId}_${Date.now()}.${ext}`,
+                (info) => {
+                    action.updateSelfMessage(focus, id, { percent: info.total.percent });
+                },
+            );
+            action.updateSelfMessage(focus, id, { content: `url:${fileUrl}&&filename:${file.filename}` });
+            this.sendMessage(id, 'file', `url:${fileUrl}&&filename:${file.filename}`, focus);
+        } catch (err) {
+            console.error(err);
+            Message.error('上传文件失败');
+        }
+    }
+    handleSelectFile = async (type = 'image') => {
         if (!this.props.connect) {
             return Message.error('发送消息失败, 您当前处于离线状态');
         }
-        const image = await readDiskFile('blob', 'image/png,image/jpeg,image/gif');
-        if (!image) {
+        const file = await readDiskFile('blob', type === 'image' ? 'image/png,image/jpeg,image/gif' : '*/*');
+        if (!file) {
             return;
         }
-        this.sendImageMessage(image);
+        this[type === 'image' ? 'sendImageMessage' : 'sendFileMessage'](file);
     }
     sendHuaji = async () => {
         const huaji = getRandomHuaji();
@@ -436,6 +467,7 @@ class ChatInput extends Component {
                 <MenuItem key="huaji">发送滑稽</MenuItem>
                 <MenuItem key="image">发送图片</MenuItem>
                 <MenuItem key="code">发送代码</MenuItem>
+                <MenuItem key="file">发送文件</MenuItem>
             </Menu>
         </div>
     )

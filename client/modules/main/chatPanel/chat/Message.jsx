@@ -59,7 +59,7 @@ class Message extends Component {
         avatar: PropTypes.string.isRequired,
         nickname: PropTypes.string.isRequired,
         time: PropTypes.object.isRequired,
-        type: PropTypes.oneOf(['text', 'image', 'url', 'code', 'invite']),
+        type: PropTypes.oneOf(['text', 'image', 'file', 'url', 'code', 'invite']),
         content: PropTypes.string.isRequired,
         isSelf: PropTypes.bool,
         loading: PropTypes.bool,
@@ -158,6 +158,9 @@ class Message extends Component {
             }
         }
     }
+    downloadFile = (downloadLink) => {
+        window.open(downloadLink)
+    }
     renderText() {
         let { content } = this.props;
         content = content.replace(
@@ -189,6 +192,18 @@ class Message extends Component {
                     images={[{ src, alt: src }]}
                     noNavbar
                 />
+            </div>
+        );
+    }
+    renderFile() {
+        const { content, loading } = this.props;
+        const [ url, filename ] = content.substr(4).split('&&filename:')
+        return (
+            <div className={`invite ${loading ? 'loading' : ''}`}  onClick={() => this.downloadFile(url)}>
+                <div>
+                    <span>{filename}</span>
+                </div>
+                {url && (<p>下载</p>)}
             </div>
         );
     }
@@ -257,6 +272,9 @@ class Message extends Component {
         }
         case 'image': {
             return this.renderImage();
+        }
+        case 'file': {
+            return this.renderFile();
         }
         case 'code': {
             return this.renderCode();
